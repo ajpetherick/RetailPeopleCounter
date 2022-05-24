@@ -4,6 +4,8 @@ import time as t
 from datetime import datetime
 import json
 import time
+import RPi.GPIO as GPIO
+import time
 
 ENDPOINT = "a2jv0zm6reglkj-ats.iot.us-east-1.amazonaws.com"
 CLIENT_ID = "iot_people_counter"
@@ -12,6 +14,16 @@ PATH_TO_KEY = "C:/Users/apetherick/Downloads/f7236a911e1f35ad84eba3a369a6308c3ea
 PATH_TO_ROOT = "C:/Users/apetherick/Downloads/AmazonRootCA1 (3).pem"
 SENSOR_ID = "1"
 TOPIC = "device/" +SENSOR_ID + "/data"
+LED_PIN = 16
+PIR_PIN = 12
+sum_total = 0
+with open('./counter.csv', 'r') as f:
+    sum_total = int(f.read())
+GPIO.setwarnings(False)
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(PIR_PIN, GPIO.IN)         #Read output from PIR motion sensor
+GPIO.setup(LED_PIN, GPIO.OUT)         #LED output pin
+GPIO.add_event_detect(PIR_PIN, GPIO.BOTH, bouncetime=5)
 
 def sendData(data):
     # Spin up resources
@@ -43,20 +55,32 @@ def sendData(data):
     disconnect_future = mqtt_connection.disconnect()
     disconnect_future.result()
 
-dt = datetime.now()
-store = 'Albany Store'
-device_type ='Door Mount Sensor'
-count = 30
-voltage = 3.3
-JSONPayload = {
-   "timestamp":"{0}".format(dt),
-   "storeName":"{0}".format(store),
-   "deviceType":"{0}".format(device_type),
-   "cumulativeCount":"{0}".format(count),
-   "supplyVoltage":{
-      "value":"{0}".format(voltage),
-      "unit":"V"
-   }
-}
+def pir_rx():
+    global sum_total
+    while True:
+        #GPIO.wait_for_edge(PIR_PIN, GPIO.RISING)
+        
+        if GPIO.event_detected(PIR_PIN):
+            #time.sleep(0.005)
+            if GPIO.input(PIR_PIN) == 1:
+                print("rising")
+                GPIO.output(LED_PIN, 1)
+                dtg = datetime.now().strftime("%Y-%d-%m %H:%M:%S")
+                sum_total+=1
+                JSONTemplate = {
+                   "timestamp":dtg,
+                   "storeName":"Albany Store",
+                   "deviceType":"Door-Mount-PIR",
+                   "cumulativeCount":sum_total,
+                   "activation":"rising"
+                }
+                print("Sending data")
+                sendData(JSONTemplate)
+                with open('./counter.csv', 'w') as f:
+                    f.write(str(sum_total))
+            else:
+                print("falling")
+                GPIO.output(LED_PIN, 0)
 
-sendData(JSONPayload)
+pir_rx()
+
