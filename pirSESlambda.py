@@ -24,7 +24,12 @@ def lambda_handler(event, context):
 
     # sort ascending
     newlist = sorted(sensor_list, key=itemgetter('sample_time'), reverse=True)
-    latest_reading = str(newlist[0])
+    latest_reading = dict(newlist[0])
+
+    time_stamp = latest_reading["device_data"]["timestamp"]
+    cumulative_count = latest_reading["device_data"]["cumulativeCount"]
+    device_name = latest_reading["device_data"]["deviceName"]
+    device_type = latest_reading["device_data"]["deviceType"]
 
     # Replace sender@example.com with your "From" address.
     # This address must be verified with Amazon SES.
@@ -47,7 +52,7 @@ def lambda_handler(event, context):
 
     # The email body for recipients with non-HTML email clients.
     BODY_TEXT = ("Amazon SES Test (Python)\r\n"
-                 "<p>Your PIR sensor data: " + latest_reading + "</p>\r\n"
+                 "<p>People count: " + str(cumulative_count) + "</p>\r\n"
 
                  )
 
@@ -55,15 +60,18 @@ def lambda_handler(event, context):
     BODY_HTML = """<html>
 <head></head>
 <body>
-  <h1>Your PIR sensor data</h1>
-  <p>{0} </p>
+  <h2>Your PIR sensor data</h2>
+  <p>Time: {0}</p>
+  <p>People through the door: {1}</p>
+  <p>Store: {2}</p>
+  <p>Sesnor: {3}</p>
   <p>This email was sent with
     <a href='https://aws.amazon.com/ses/'>Amazon SES</a> using the
     <a href='https://aws.amazon.com/sdk-for-python/'>
       AWS SDK for Python (Boto)</a>.</p>
 </body>
 </html>
-            """.format(latest_reading)
+            """.format(time_stamp, cumulative_count, device_name, device_type)
 
     # The character encoding for the email.
     CHARSET = "UTF-8"
