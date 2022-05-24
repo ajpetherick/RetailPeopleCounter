@@ -43,13 +43,18 @@ def sendData(data):
     disconnect_future = mqtt_connection.disconnect()
     disconnect_future.result()
 
+dt = datetime.now()
+store = 'Albany Store'
+device_type ='Door Mount Sensor'
+count = 30
+voltage = 3.3
 JSONPayload = {
-   "timestamp":"YYYY-MM-DD HH:MM:SS",
-   "deviceName":"sensor1",
-   "deviceType":"Door-Mount-PIR",
-   "cumulativeCount":25,
+   "timestamp":"{0}".format(dt),
+   "storeName":"{0}".format(store),
+   "deviceType":"{0}".format(device_type),
+   "cumulativeCount":"{0}".format(count),
    "supplyVoltage":{
-      "value":3.3, 
+      "value":"{0}".format(voltage),
       "unit":"V"
    }
 }
