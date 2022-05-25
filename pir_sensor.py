@@ -1,7 +1,7 @@
 from awscrt import io, mqtt, auth, http
 from awsiot import mqtt_connection_builder
 import time as t
-from datetime import datetime
+import datetime
 import json
 import time
 import RPi.GPIO as GPIO
@@ -19,8 +19,11 @@ PIR_PIN = 12
 IR_PIN = 19
 IR_END = 0
 sum_total = 0
+sum_date = False
 with open('./counter.csv', 'r') as f:
-    sum_total = int(f.read())
+    data = json.load(f)
+    sum_total = data['sum']
+    sum_date = data['date']
 GPIO.setwarnings(False)
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(PIR_PIN, GPIO.IN)         #Read output from PIR motion sensor
@@ -59,14 +62,14 @@ def sendData(data):
     disconnect_future.result()
 
 def pir_rx():
-    global sum_total, IR_END
+    global sum_total, IR_END, sum_date
     while True:
         if GPIO.event_detected(PIR_PIN):
             #time.sleep(0.005)
             if GPIO.input(PIR_PIN) == 1:
                 print("rising")
                 night = False
-                now = datetime.now()
+                now = datetime.datetime.now()
                 if now.hour > 17 or now.hour < 7:
                     GPIO.output(IR_PIN, 1)
                     IR_END = now.hour+1
@@ -74,7 +77,11 @@ def pir_rx():
                 else:
                     GPIO.output(LED_PIN, 1)
                 dtg = now.strftime("%Y-%d-%m %H:%M:%S")
-                sum_total+=1
+                if sum_date == str(datetime.date.today()):
+                    sum_total+=1
+                else:
+                    sum_total = 1
+                    sum_date = str(datetime.date.today())
                 JSONTemplate = {
                    "timestamp":dtg,
                    "storeName":"Albany Store",
@@ -83,11 +90,11 @@ def pir_rx():
                    "activation":"rising",
                    "night":night
                 }
-                print(night)
                 print("Sending data")
                 sendData(JSONTemplate)
                 with open('./counter.csv', 'w') as f:
-                    f.write(str(sum_total))
+                    deets = {"date":str(datetime.date.today()), "sum":sum_total}
+                    json.dump(deets, f)
             else:
                 print("falling")
                 GPIO.output(LED_PIN, 0)
