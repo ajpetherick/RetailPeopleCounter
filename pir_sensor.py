@@ -69,7 +69,7 @@ def pir_rx():
                 now = datetime.now()
                 if now.hour > 17 or now.hour < 7:
                     GPIO.output(IR_PIN, 1)
-                    IR_END = Now.hour+1
+                    IR_END = now.hour+1
                     night = True
                 else:
                     GPIO.output(LED_PIN, 1)
@@ -94,6 +94,7 @@ def pir_rx():
                 if now.hour > IR_END:
                     GPIO.output(IR_PIN, 0)
                     IR_END = 0
+
 
 pir_rx()
 
