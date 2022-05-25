@@ -57,9 +57,6 @@ def sendData(data):
 
 def pir_rx():
     global sum_total
-    while True:
-        #GPIO.wait_for_edge(PIR_PIN, GPIO.RISING)
-        
         if GPIO.event_detected(PIR_PIN):
             #time.sleep(0.005)
             if GPIO.input(PIR_PIN) == 1:
