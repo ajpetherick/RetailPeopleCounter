@@ -9,9 +9,9 @@ import time
 
 ENDPOINT = "a2jv0zm6reglkj-ats.iot.us-east-1.amazonaws.com"
 CLIENT_ID = "iot_people_counter"
-PATH_TO_CERT = "C:/Users/apetherick/Downloads/f7236a911e1f35ad84eba3a369a6308c3ea24a4befbfbfd1e1ecc4c9f79994ce-certificate.pem.crt"
-PATH_TO_KEY = "C:/Users/apetherick/Downloads/f7236a911e1f35ad84eba3a369a6308c3ea24a4befbfbfd1e1ecc4c9f79994ce-private.pem.key"
-PATH_TO_ROOT = "C:/Users/apetherick/Downloads/AmazonRootCA1 (3).pem"
+PATH_TO_CERT = "/home/vaughan/Documents/a3certs/f7236a911e1f35ad84eba3a369a6308c3ea24a4befbfbfd1e1ecc4c9f79994ce-certificate.pem.crt"
+PATH_TO_KEY = "/home/vaughan/Documents/a3certs/f7236a911e1f35ad84eba3a369a6308c3ea24a4befbfbfd1e1ecc4c9f79994ce-private.pem.key"
+PATH_TO_ROOT = "/home/vaughan/Documents/a3certs/AmazonRootCA1 (3).pem"
 SENSOR_ID = "1"
 TOPIC = "device/" +SENSOR_ID + "/data"
 LED_PIN = 16
