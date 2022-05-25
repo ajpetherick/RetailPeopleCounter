@@ -16,6 +16,8 @@ SENSOR_ID = "1"
 TOPIC = "device/" +SENSOR_ID + "/data"
 LED_PIN = 16
 PIR_PIN = 12
+IR_PIN = 19
+IR_END = 0
 sum_total = 0
 with open('./counter.csv', 'r') as f:
     sum_total = int(f.read())
@@ -23,6 +25,7 @@ GPIO.setwarnings(False)
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(PIR_PIN, GPIO.IN)         #Read output from PIR motion sensor
 GPIO.setup(LED_PIN, GPIO.OUT)         #LED output pin
+GPIO.setup(IR_PIN, GPIO.OUT)         #LED output pin
 GPIO.add_event_detect(PIR_PIN, GPIO.BOTH, bouncetime=5)
 
 def sendData(data):
@@ -56,21 +59,31 @@ def sendData(data):
     disconnect_future.result()
 
 def pir_rx():
-    global sum_total
+    global sum_total, IR_END
+    while True:
         if GPIO.event_detected(PIR_PIN):
             #time.sleep(0.005)
             if GPIO.input(PIR_PIN) == 1:
                 print("rising")
-                GPIO.output(LED_PIN, 1)
-                dtg = datetime.now().strftime("%Y-%d-%m %H:%M:%S")
+                night = False
+                now = datetime.now()
+                if now.hour > 17 or now.hour < 7:
+                    GPIO.output(IR_PIN, 1)
+                    IR_END = Now.hour+1
+                    night = True
+                else:
+                    GPIO.output(LED_PIN, 1)
+                dtg = now.strftime("%Y-%d-%m %H:%M:%S")
                 sum_total+=1
                 JSONTemplate = {
                    "timestamp":dtg,
                    "storeName":"Albany Store",
                    "deviceType":"Door-Mount-PIR",
                    "cumulativeCount":sum_total,
-                   "activation":"rising"
+                   "activation":"rising",
+                   "night":night
                 }
+                print(night)
                 print("Sending data")
                 sendData(JSONTemplate)
                 with open('./counter.csv', 'w') as f:
@@ -78,6 +91,9 @@ def pir_rx():
             else:
                 print("falling")
                 GPIO.output(LED_PIN, 0)
+                if now.hour > IR_END:
+                    GPIO.output(IR_PIN, 0)
+                    IR_END = 0
 
 pir_rx()
 
