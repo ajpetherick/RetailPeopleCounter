@@ -65,7 +65,6 @@ def pir_rx():
     global sum_total, IR_END, sum_date
     while True:
         if GPIO.event_detected(PIR_PIN):
-            #time.sleep(0.005)
             if GPIO.input(PIR_PIN) == 1:
                 print("rising")
                 night = False
