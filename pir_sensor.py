@@ -28,7 +28,7 @@ GPIO.setwarnings(False)
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(PIR_PIN, GPIO.IN)         #Read output from PIR motion sensor
 GPIO.setup(LED_PIN, GPIO.OUT)         #LED output pin
-GPIO.setup(IR_PIN, GPIO.OUT)         #LED output pin
+GPIO.setup(IR_PIN, GPIO.OUT)         #IR output pin
 GPIO.add_event_detect(PIR_PIN, GPIO.BOTH, bouncetime=5)
 
 def sendData(data):
