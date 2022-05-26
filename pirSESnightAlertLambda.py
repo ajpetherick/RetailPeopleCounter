@@ -4,34 +4,12 @@ import csv
 import datetime
 import json
 from operator import itemgetter
+import time
 
 
 def lambda_handler(event, context):
-    region = 'us-east-1'
-    dynamodb = boto3.client('dynamodb', region_name=region)
-    dynamodbResource = boto3.resource('dynamodb', region_name=region)
-
-    sensorTable = dynamodbResource.Table('sensor_readings')
-    sensorTableScan = sensorTable.scan()
-    sensorData = sensorTableScan["Items"]
-    userEmail = "a_petherick@hotmail.com"
-
-    sensor_list = []
-    for i in range(len(sensorData)):
-        reading = sensorData[i]  # ["device_data"]
-        sensor_list.append(reading)
-        print("unsorted", reading)
-
-    # sort ascending
-    newlist = sorted(sensor_list, key=itemgetter('sample_time'), reverse=True)
-    latest_reading = dict(newlist[0])
-
-    time_stamp = latest_reading["device_data"]["timestamp"]
-    cumulative_count = latest_reading["device_data"]["cumulativeCount"]
-    store_name = latest_reading["device_data"]["storeName"]
-    device_type = latest_reading["device_data"]["deviceType"]
-    activation = latest_reading["device_data"]["activation"]
-
+    now = datetime.datetime.now()
+    d = now.strftime("%Y-%d-%m %H:%M:%S")
     # Replace sender@example.com with your "From" address.
     # This address must be verified with Amazon SES.
     SENDER = "admant85@gmail.com"
@@ -49,15 +27,12 @@ def lambda_handler(event, context):
     AWS_REGION = "us-east-1"
 
     # The subject line for the email.
-    SUBJECT = "Your latest people count"
+    SUBJECT = "Securuity Alert: Movement detected after hours!"
 
     # The email body for recipients with non-HTML email clients.
-    BODY_TEXT = ("Your PIR sensor data\r\n"
-                 "Time: {0} \r\n"
-                 "People through the door: {1} \r\n"
-                 "Store: {2} \r\n"
-                 "Sesnor: {3} \r\n"
-                 "Activation: {4} \r\n".format(time_stamp, cumulative_count, store_name, device_type, activation)
+    BODY_TEXT = ("Movement detected after hours!\r\n"
+                 "Movement was detected at {0}\r\n".format(d)
+
                  )
 
     # The HTML body of the email.
@@ -75,13 +50,13 @@ body {{
     <div style="max-width: 900px;display: block;margin-left: auto; margin-right: auto">
       <div style="max-width: 900px; background-color:#ffffff; border-radius: 12px;  box-shadow: 0 2px 5px 0 rgba(0,0,0,0.05); margin-bottom: 12px;">
         <div id="header" style="padding:12px; text-align: center;">
-          <img style="vertical-align:middle;height: 45px; border-radius:50%; margin-bottom:.9em" src="https://image-bucket-small.s3.amazonaws.com/98f6f554405048c88d941c440d03089a.png"/>
+          <img style="vertical-align:middle;height: 45px; border-radius:50%; margin-bottom:.9em" src="https://image-bucket-small.s3.amazonaws.com/98f6f554405048c88d941c440d03089a.png" />
           <span style="font-size: 1.8em; font-weight:600; margin-top:3em">Retail People Counter</span>
         </div>
         <div style="padding:12px; text-align: center; ">
           <img
-            style="width: 80%; border-top-left-radius: 9pt;  border-top-right-radius: 9pt"
-            src="https://images.pexels.com/photos/987209/pexels-photo-987209.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
+            style="width: 30%; border-top-left-radius: 9pt;  border-top-right-radius: 9pt"
+            src="https://cdn.pixabay.com/photo/2013/07/12/13/16/alert-146730_1280.png"
           />
         </div>
         <div style="padding:3em 1.5em 6em 1.5em;">
@@ -92,10 +67,10 @@ body {{
             Thank you for subscribing to Retail People Counter.
           </p>
           <p style="color:#3a4758; font-size: 1.2em">
-            Today, as at {0} local time, you received {1} people through the door of your {2} location.
+            Your Retail People Counter sensor detected movement outside of business hours at {0}. There is possibly unwanted persons on the premises of your business.
           </p>
           <p style="color:#3a4758; font-size: 1.2em">
-            Thank you very much for using our people counting technology!
+            We strongly recommend contacting your contracted security personell, or law enforcement. 
           </p>
         </div>
 
@@ -330,7 +305,7 @@ body {{
 </body>
 
 </html>
-            """.format(time_stamp, cumulative_count, store_name)
+            """.format(d)
 
     # The character encoding for the email.
     CHARSET = "UTF-8"
